@@ -1,5 +1,5 @@
 module Performance
-  
+  require "fileutils"
   #Comandos do asset
   def commands
     exec("rake asset:packager:create_yml")
@@ -35,13 +35,11 @@ module Performance
     end
     
     dir_view =  File.dirname(__FILE__) + '/app/views/layouts/'
-    IO.foreach("#{teste}application.html.erb") do |line|
-      puts "<%= csrf_meta_tag %>\n\t<%= stylesheet_link_merged :base %>\n\t<%= javascript_link_merged :base %>\n" if line =~ /TESTE/ 
-    end
-    
+    FileUtils.move("#{File.dirname(__FILE__)}/files/_stylesheets.html.erb","#{dir_view}/_stylesheets.html.erb")    
 end
   
   def echo_memoize
+    p "Finding by memoize"
     File.open
     File.open() do |file|
       file.puts "<%= stylesheet_link_merged :base %>"
