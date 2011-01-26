@@ -36,7 +36,7 @@ module Performance
     
     dir_view =  File.dirname(__FILE__) + '/app/views/layouts/'
     FileUtils.move("#{File.dirname(__FILE__)}/files/_stylesheets.html.erb","#{dir_view}/_stylesheets.html.erb")    
-end
+  end
   
   def echo_memoize
     p "Finding by memoize"
@@ -47,8 +47,8 @@ end
     end
   end
   
-  def execall
+  def run
     join_jscss
-        
+    echo_memoize    
   end
 end
