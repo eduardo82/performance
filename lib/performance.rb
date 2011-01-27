@@ -24,17 +24,16 @@ module Performance
     p "Join Images and CSS"
     commands
     p "Making procedures into app helper"
-    dir_helper =  File.dirname(__FILE__) + '/app/helpers/'
+    dir_helper =  "#{Rails.root}/app/helpers"
     arr = IO.readlines("#{dir_helper}application_helper.rb") 
     lines = arr.size
     File.open("#{dir_helper}application_helper.rb","a+") do |write_helper|
       write_helper.lineno = lines - 1
-      write_helper.puts "\n\ndef stylesheets(*files)\n\tcontent_for(:stylesheets)  { stylesheet_link_tag(*files) }\nend"
-      write_helper.puts "def javascripts(*files)\n\tcontent_for(:javascripts)  { javascripts_link_tag(*files) }\nend"
+      write_helper.puts "\n\ndef stylesheets(*files)\n\tcontent_for(:stylesheets)  { stylesheet_link_tag(*files) }\nend\n\ndef javascripts(*files)\n\tcontent_for(:javascripts)  { javascripts_link_tag(*files) }\nend"
       write_helper.close
     end
     
-    dir_view =  File.dirname(__FILE__) + '/app/views/layouts/'
+    dir_view =  "#{Rails.root}/app/views/layouts/"
     FileUtils.move("#{File.dirname(__FILE__)}/files/_stylesheets.html.erb","#{dir_view}/_stylesheets.html.erb")    
   end
   
