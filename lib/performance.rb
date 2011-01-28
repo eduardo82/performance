@@ -33,21 +33,35 @@ module Performance
       write_helper.close
     end
     
-    dir_view =  "#{Rails.root}/app/views/layouts/"
-    FileUtils.move("#{File.dirname(__FILE__)}/files/_stylesheets.html.erb","#{dir_view}/_stylesheets.html.erb")    
+    dir_view_app =  "#{Rails.root}/app/views/layouts/"
+    FileUtils.move("#{Rails.root}/files/_stylesheets.html.erb","#{dir_view_app}/_stylesheets.html.erb")    
+    
+    #Copia o conteudo do arquivo application.html.erb e cria a melhoria dos links de js e css agrupados
+    temp = File.new("#{dir_view_app}copy_app","w")
+    if File.exists?("#{dir_view_app}app.html.erb") then
+      File.open("#{teste}app.html.erb", "r") do |file_reader|
+        file_reader.readlines().each do |line|    
+          p line
+          if line =~ /<\/title>/ then
+            temp.puts "\t\t\t<\/title><%= title %><\/title>\n\t\t\t<%= csrf_meta_tag %>\n\t\t\t<%= stylesheet_link_merged :base %>\n\t\t\t<%= javascript_link_merged :base %>\n"
+          else
+            temp.puts "#{line}"
+          end    
+        end
+        temp.close
+      end
+    else 
+      puts "Arquivo app nao existe"
+    end
   end
   
   def echo_memoize
     p "Finding by memoize"
-    File.open
-    File.open() do |file|
-      file.puts "<%= stylesheet_link_merged :base %>"
-      file.puts "<%= javascript_link_merged :base %>"
-    end
   end
   
   def run
     join_jscss
+    configs_apache
     echo_memoize    
   end
 end
