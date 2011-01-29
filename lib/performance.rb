@@ -20,39 +20,44 @@ module Performance
     numero = 0
     p "Downloading Dependencies"
     #Olhar como baixar o plugin usando a gem dependencies
+    system ("gem sources -a http://gems.github.com/")
     system ("script/plugin install git://github/sbecker/asset_packager.git")
     p "Join Images and CSS"
     commands
     p "Making procedures into app helper"
+    
     dir_helper =  "#{Rails.root}/app/helpers"
-    arr = IO.readlines("#{dir_helper}application_helper.rb") 
-    lines = arr.size
-    File.open("#{dir_helper}application_helper.rb","a+") do |write_helper|
-      write_helper.lineno = lines - 1
-      write_helper.puts "\n\ndef stylesheets(*files)\n\tcontent_for(:stylesheets)  { stylesheet_link_tag(*files) }\nend\n\ndef javascripts(*files)\n\tcontent_for(:javascripts)  { javascripts_link_tag(*files) }\nend"
-      write_helper.close
+    File.open("#{dir_helper}application_helper.rb","r") do |read_helper|
+      read_reader.readlines().each do |line|    
+        if line =~ /ApplicationHelper/ then
+          read_helper.puts "module ApplicationHelper\n\n\tdef stylesheets(*files)\n\tcontent_for(:stylesheets)  { stylesheet_link_tag(*files) }\nend\n\ndef javascripts(*files)\n\tcontent_for(:javascripts)  { javascripts_link_tag(*files) }\nend"
+        else
+          read_helper.puts "#{line}"
+        end
+      end
     end
     
     dir_view_app =  "#{Rails.root}/app/views/layouts/"
-    FileUtils.move("#{Rails.root}/files/_stylesheets.html.erb","#{dir_view_app}/_stylesheets.html.erb")    
-    
+    Dir.chdir("#{dir_view_app}")
     #Copia o conteudo do arquivo application.html.erb e cria a melhoria dos links de js e css agrupados
-    temp = File.new("#{dir_view_app}copy_app","w")
-    if File.exists?("#{dir_view_app}app.html.erb") then
-      File.open("#{teste}app.html.erb", "r") do |file_reader|
+    temp = File.new("app.html.erb","w")
+    if File.exists?("application.html.erb") then
+      File.open("application.html.erb", "r") do |file_reader|
         file_reader.readlines().each do |line|    
-          p line
-          if line =~ /<\/title>/ then
-            temp.puts "\t\t\t<\/title><%= title %><\/title>\n\t\t\t<%= csrf_meta_tag %>\n\t\t\t<%= stylesheet_link_merged :base %>\n\t\t\t<%= javascript_link_merged :base %>\n"
-          else
+          if line =~ /<\/title>/
+            temp.puts "\t\t\t<title><%= title %><\/title>\n\t\t\t<%= csrf_meta_tag %>\n\t\t\t<%= stylesheet_link_merged :base %>\n\t\t\t<%= yield stylesheets %>\n"            
+          else 
             temp.puts "#{line}"
           end    
+          temp.puts "\n\t\t<%= javascript_link_merged :base %>\n\t\t<%= yield javascripts %>\n" if line =~ /<\/body>/
         end
         temp.close
       end
     else 
       puts "Arquivo app nao existe"
     end
+    FileUtils.mv("application.html.erb", "old_application.html.erb")
+    FileUtils.mv("app.html.erb", "application.html.erb")
   end
   
   def echo_memoize
