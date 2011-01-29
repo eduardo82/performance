@@ -9,10 +9,9 @@ module Performance
   
   #Copiando as configuracoes de compreesao e cache de 1 mes para figuras em geral.
   def configs_apache
-    File.open(".htaccess", "w") do |file|
+    File.open("#{Rails.root}/public/.htaccess", "w") do |file|
       file.puts "<IfModule mod_deflate.c>\n\tAddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/x-javascript\n</IfModule>\n\n"
       file.puts "ExpiresActive On\n<FilesMatch '\\.(ico|jpg|jpeg|png|gif|js|css)'>\n\tExpiresDefault 'access plus 1 month'\n</FilesMatch>"
-      file.close
     end
   end
   
@@ -20,8 +19,8 @@ module Performance
     numero = 0
     p "Downloading Dependencies"
     #Olhar como baixar o plugin usando a gem dependencies
-    system ("gem sources -a http://gems.github.com/")
-    system ("script/plugin install git://github/sbecker/asset_packager.git")
+#    system ("gem sources -a http://gems.github.com/")
+#    system ("script/plugin install git://github/sbecker/asset_packager.git")
     p "Join Images and CSS"
     commands
     p "Making procedures into app helper"
@@ -54,8 +53,9 @@ module Performance
         temp.close
       end
     else 
-      puts "Arquivo app nao existe"
+      puts "Arquivo application.html.erb nao existe"
     end
+    p "Renaming your application.html.erb to old_application.html.erb"
     FileUtils.mv("application.html.erb", "old_application.html.erb")
     FileUtils.mv("app.html.erb", "application.html.erb")
   end
