@@ -26,8 +26,8 @@ module Performance
     numero = 0
     p "Downloading Dependencies"
     #Olhar como baixar o plugin usando a gem dependencies
-#    system ("gem sources -a http://gems.github.com/")
-#    system ("script/plugin install git://github/sbecker/asset_packager.git")
+    system("git clone git://github/sbecker/asset_packager.git")
+    system("script/plugin install git://github/sbecker/asset_packager.git")
     p "Join Images and CSS"
     commands
     p "Making procedures into app helper"    
@@ -67,7 +67,7 @@ module Performance
   end
   
   def ar_performance
-    p "Finding by N+1 querys"
+    p "Finding by N+1 queries"
     dir_models = "#{Rails.root}/app/models"
     list = Dir.entries("#{dir_models}")
         list.each do |file|
@@ -78,8 +78,7 @@ module Performance
               puts line if line =~ /has_one:/
             end
           end
-        end
-    
+        end    
   end
   
   def run
