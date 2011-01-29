@@ -7,11 +7,18 @@ module Performance
   end
   
   
-  #Copiando as configuracoes de compreesao e cache de 1 mes para figuras em geral.
+  #Copiando as configuracoes de compreesao de imagens em geral e cache de 1 mes para outros formatos.
   def configs_apache
-    File.open("#{Rails.root}/public/.htaccess", "w") do |file|
-      file.puts "<IfModule mod_deflate.c>\n\tAddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/x-javascript\n</IfModule>\n\n"
-      file.puts "ExpiresActive On\n<FilesMatch '\\.(ico|jpg|jpeg|png|gif|js|css)'>\n\tExpiresDefault 'access plus 1 month'\n</FilesMatch>"
+    if File.exists?("#{Rails.root}/public/.htaccess")  then
+      File.open("#{Rails.root}/public/.htaccess", "a") do |file|
+        file.puts "<IfModule mod_deflate.c>\n\tAddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/x-javascript\n</IfModule>\n\n"
+        file.puts "ExpiresActive On\n<FilesMatch '\\.(ico|jpg|jpeg|png|gif|js|css)'>\n\tExpiresDefault 'access plus 1 month'\n</FilesMatch>"
+      end
+    else
+      File.open("#{Rails.root}/public/.htaccess", "w") do |file|
+        file.puts "<IfModule mod_deflate.c>\n\tAddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/x-javascript\n</IfModule>\n\n"
+        file.puts "ExpiresActive On\n<FilesMatch '\\.(ico|jpg|jpeg|png|gif|js|css)'>\n\tExpiresDefault 'access plus 1 month'\n</FilesMatch>"
+      end
     end
   end
   
@@ -23,8 +30,7 @@ module Performance
 #    system ("script/plugin install git://github/sbecker/asset_packager.git")
     p "Join Images and CSS"
     commands
-    p "Making procedures into app helper"
-    
+    p "Making procedures into app helper"    
     dir_helper =  "#{Rails.root}/app/helpers"
     File.open("#{dir_helper}application_helper.rb","r") do |read_helper|
       read_reader.readlines().each do |line|    
@@ -60,13 +66,25 @@ module Performance
     FileUtils.mv("app.html.erb", "application.html.erb")
   end
   
-  def echo_memoize
-    p "Finding by memoize"
+  def ar_performance
+    p "Finding by N+1 querys"
+    dir_models = "#{Rails.root}/app/models"
+    list = Dir.entries("#{dir_models}")
+        list.each do |file|
+          strings = file.to_s
+          if strings =="." || strings ==".."
+          else
+            IO.foreach("#{file}") do |line|
+              puts line if line =~ /has_one:/
+            end
+          end
+        end
+    
   end
   
   def run
     join_jscss
     configs_apache
-    echo_memoize    
+    ar_performance    
   end
 end
