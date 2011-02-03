@@ -1,11 +1,5 @@
 module Performance
   require "fileutils"
-  #Comandos do asset
-  def commands
-    exec("rake asset:packager:create_yml")
-    exec("rake asset:packager:build_all")
-  end
-  
   
   #Copiando as configuracoes de compreesao de imagens em geral e cache de 1 mes para outros formatos.
   def configs_apache
@@ -23,15 +17,9 @@ module Performance
   end
   
   def join_jscss
-    numero = 0
-    p "Downloading Dependencies"
-    #Olhar como baixar o plugin usando a gem dependencies
-    system("git clone git://github/sbecker/asset_packager.git")
-    system("script/plugin install git://github/sbecker/asset_packager.git")
     p "Join Images and CSS"
-    commands
     p "Making procedures into app helper"    
-    dir_helper =  "#{Rails.root}/app/helpers"
+    dir_helper =  "#{Rails.root}/app/helpers/"
     File.open("#{dir_helper}application_helper.rb","r") do |read_helper|
       read_reader.readlines().each do |line|    
         if line =~ /ApplicationHelper/ then
@@ -59,7 +47,7 @@ module Performance
         temp.close
       end
     else 
-      puts "Arquivo application.html.erb nao existe"
+      puts "Arquivo application.html.erb  inexistente"
     end
     p "Renaming your application.html.erb to old_application.html.erb"
     FileUtils.mv("application.html.erb", "old_application.html.erb")
