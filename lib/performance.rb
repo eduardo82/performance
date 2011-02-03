@@ -7,18 +7,18 @@ module Performance
       File.open("#{Rails.root}/public/.htaccess", "a") do |file|
         file.puts "<IfModule mod_deflate.c>\n\tAddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/x-javascript\n</IfModule>\n\n"
         file.puts "ExpiresActive On\n<FilesMatch '\\.(ico|jpg|jpeg|png|gif|js|css)'>\n\tExpiresDefault 'access plus 1 month'\n</FilesMatch>"
+        file.puts "<Directory '#{Rails.root}/public/assets'>\n\tExpiresDefault 'access plus 1 year'\n</Directory>"
       end
     else
       File.open("#{Rails.root}/public/.htaccess", "w") do |file|
         file.puts "<IfModule mod_deflate.c>\n\tAddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/x-javascript\n</IfModule>\n\n"
         file.puts "ExpiresActive On\n<FilesMatch '\\.(ico|jpg|jpeg|png|gif|js|css)'>\n\tExpiresDefault 'access plus 1 month'\n</FilesMatch>"
+        file.puts "<Directory '#{Rails.root}/public/assets'>\n\tExpiresDefault 'access plus 1 year'\n</Directory>"
       end
     end
   end
   
-  def join_jscss
-    #Incluir esta linha no environment.rb config.gem "jammit"
-    Dir.mkdir("#{Rails.root}/public/config/assets.yml")
+  def join_jscss    
     make_datas
     system("jammit")
     
@@ -42,16 +42,16 @@ module Performance
       File.open("application.html.erb", "r") do |file_reader|
         file_reader.readlines().each do |line|    
           if line =~ /<\/title>/
-            temp.puts "\t\t\t<title><%= title %><\/title>\n\t\t\t<%= csrf_meta_tag %>\n\t\t\t<%= stylesheet_link_merged :base %>\n\t\t\t<%= yield stylesheets %>\n"            
+            temp.puts "\t\t\t<title><%= title %><\/title>\n\t\t\t<%= csrf_meta_tag %>\n\t\t\t<%= include_stylesheets :workspace, :media => 'all' %>\n\t\t\t<%= yield stylesheets %>\n"            
           else 
             temp.puts "#{line}"
           end    
-          temp.puts "\n\t\t<%= javascript_link_merged :base %>\n\t\t<%= yield javascripts %>\n" if line =~ /<\/body>/
+          temp.puts "\n\t\t<%= include_javascripts :workspace %>\n\t\t<%= yield javascripts %>\n" if line =~ /<\/body>/
         end
         temp.close
       end
     else 
-      puts "Arquivo application.html.erb  inexistente"
+      puts "Arquivo application.html.erb Inexistente"
     end
     p "Renaming your application.html.erb to old_application.html.erb"
     FileUtils.mv("application.html.erb", "old_application.html.erb")
@@ -59,7 +59,12 @@ module Performance
   end
   
   def make_datas
-    
+    Dir.mkdir("#{Rails.root}/public/config") if !Dir.exists?
+    Dir.chdir("#{Rails.root}/public/config")
+    File.new("assets.yml", "w") do |file|
+      file.puts("embed_assets: on\njavascripts:\n\tworkspace:\n\t\t - public/javascripts/*.js")
+      file.puts("\nstylesheets:\n\tworkspace:\n\t\t - public/stylesheets/*.css")
+    end  
   end
   
   def ar_performance
