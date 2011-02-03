@@ -17,7 +17,11 @@ module Performance
   end
   
   def join_jscss
-    p "Join Images and CSS"
+    #Incluir esta linha no environment.rb config.gem "jammit"
+    Dir.mkdir("#{Rails.root}/public/config/assets.yml")
+    make_datas
+    system("jammit")
+    
     p "Making procedures into app helper"    
     dir_helper =  "#{Rails.root}/app/helpers/"
     File.open("#{dir_helper}application_helper.rb","r") do |read_helper|
@@ -52,6 +56,10 @@ module Performance
     p "Renaming your application.html.erb to old_application.html.erb"
     FileUtils.mv("application.html.erb", "old_application.html.erb")
     FileUtils.mv("app.html.erb", "application.html.erb")
+  end
+  
+  def make_datas
+    
   end
   
   def ar_performance
