@@ -1,5 +1,6 @@
 module Performance
   require "fileutils"
+  require "jammit"
   
   #Copiando as configuracoes de compreesao de imagens em geral e cache de 1 mes para outros formatos.
   def configs_apache
@@ -7,13 +8,13 @@ module Performance
       File.open("#{Rails.root}/public/.htaccess", "a") do |file|
         file.puts "<IfModule mod_deflate.c>\n\tAddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/x-javascript\n</IfModule>\n\n"
         file.puts "ExpiresActive On\n<FilesMatch '\\.(ico|jpg|jpeg|png|gif|js|css)'>\n\tExpiresDefault 'access plus 1 month'\n</FilesMatch>"
-        file.puts "<Directory '#{Rails.root}/public/assets'>\n\tExpiresDefault 'access plus 1 year'\n</Directory>"
+        file.puts "<Directory '#{Rails.root}/public/assets'>\n\tExpiresDefault 'access plus 1 month'\n</Directory>"
       end
     else
       File.open("#{Rails.root}/public/.htaccess", "w") do |file|
         file.puts "<IfModule mod_deflate.c>\n\tAddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/x-javascript\n</IfModule>\n\n"
         file.puts "ExpiresActive On\n<FilesMatch '\\.(ico|jpg|jpeg|png|gif|js|css)'>\n\tExpiresDefault 'access plus 1 month'\n</FilesMatch>"
-        file.puts "<Directory '#{Rails.root}/public/assets'>\n\tExpiresDefault 'access plus 1 year'\n</Directory>"
+        file.puts "<Directory '#{Rails.root}/public/assets'>\n\tExpiresDefault 'access plus 1 month'\n</Directory>"
       end
     end
   end
@@ -21,7 +22,6 @@ module Performance
   def join_jscss    
     make_datas
     system("jammit")
-    
     p "Making procedures into app helper"    
     dir_helper =  "#{Rails.root}/app/helpers/"
     File.open("#{dir_helper}application_helper.rb","r") do |read_helper|

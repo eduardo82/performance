@@ -3,7 +3,7 @@ $:.push File.expand_path("../lib", __FILE__)
 require "performance/version"
 
 Gem::Specification.new do |s|
-  s.name        = "performance"
+  s.name        = "performance_client_side"
   s.version     = Performance::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Eduardo de Oliveira Vasconcelos"]
@@ -13,7 +13,6 @@ Gem::Specification.new do |s|
   s.description = %q{Get better performance in Rails 3 app}
 
   s.rubyforge_project = "performance"
-  
   s.add_dependency "jammit"
 
   s.files         = `git ls-files`.split("\n")
