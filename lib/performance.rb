@@ -76,7 +76,10 @@ module Performance
           if strings =="." || strings ==".."
           else
             IO.foreach("#{file}") do |line|
-              puts line if line =~ /has_one:/
+              if line =~ /has_one:/ then
+                p "Possible N+1 query"
+                p "Analyzing"
+              end
             end
           end
         end    
