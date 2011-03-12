@@ -67,7 +67,7 @@ module Performance
     end  
   end
   
-  def ar_performance
+  def query_performance
     p "Finding by N+1 queries"
     dir_models = "#{Rails.root}/app/models"
     list = Dir.entries("#{dir_models}")
@@ -77,7 +77,7 @@ module Performance
           else
             IO.foreach("#{file}") do |line|
               if line =~ /has_one:/ then
-                p "Possible N+1 query"
+                p "Possible N+1 query found in #{file}"
                 p "Analyzing"
               end
             end
@@ -85,9 +85,24 @@ module Performance
         end    
   end
   
+  def cache_server
+    #controller - ARG[0]
+    #action - ARG[1]
+    
+    echo "\n\tcaches_page :public \n\tcache_sweeper :entry_sweeper, :only => [:create, :update, :destroy]"
+    File.new("../files/ControllerSweeper.rb", "r") do |observer|
+      FileUtils.cp(observer, "#{Rails.root}/app/models/ControllerSweeper.rb", :verbose => true)
+    end    
+  end
+  
+  def config_static_server
+  end
+  
   def run
     join_jscss
     configs_apache
-    ar_performance    
+    query_performance    
+    cache_server
+    config_static_server
   end
 end
