@@ -85,16 +85,25 @@ module Performance
         end    
   end
   
+  #Make cache in controller and action, when happen the operations destroy, create and update. 
+  #The controller and action are parameters 0 and 1 RESPECTIVAMENTE
   def cache_server
-    #controller - ARG[0]
-    #action - ARG[1]
-    
-    echo "\n\tcaches_page :public \n\tcache_sweeper :entry_sweeper, :only => [:create, :update, :destroy]"
-    File.new("../files/ControllerSweeper.rb", "r") do |observer|
-      FileUtils.cp(observer, "#{Rails.root}/app/models/ControllerSweeper.rb", :verbose => true)
+    controller = ARGV[0]
+    action = ARGV[1]
+    File.new("#{Rails.root}/app/models/#{controller.capitalize}_sweeper.rb", "w+") do |observer_file|
+      observer_file.puts("class #{controller.capitalize}Sweeper < ActionController::Caching::Sweeper") 
+      observer_file.puts("observe {#{controller.capitalize}}")
+      observer_file.puts("def expire_cached_content(#{controller.downcase})") 
+      observer_file.puts("expire_page :controller => '#{controller.pluralize}', :action => '#{action.downcase}' ")
+      observer_file.puts("expire_fragment(%r{#{controller.pluralize}/.*}) ")
+      observer_file.puts("alias_method :after_save, :expire_cached_content\nalias_method :after_destroy, :expire_cached_content\nend")
     end    
+    File.open("#{Rails.root}/app/controllers/#{controller.pluralize}_controller.rb", "a+") do |file|  
+      file.puts("\n\tcaches_page :#{action.downcase} \n\tcache_sweeper :#{controller.downcase}_sweeper, :only => [:create, :update, :destroy]")
+    end
   end
   
+    
   def config_static_server
   end
   
