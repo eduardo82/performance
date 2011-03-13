@@ -2,7 +2,8 @@ module Performance
   require "fileutils"
   require "jammit"
   
-  #Copiando as configuracoes de compreesao de imagens em geral e cache de 1 mes para outros formatos.
+  #It uses Apache configuration to do compreession of some type of html, css, js and xml.
+  #It creates cache with duration of 1 month to images and others static files.
   def configs_apache
     if File.exists?("#{Rails.root}/public/.htaccess")  then
       File.open("#{Rails.root}/public/.htaccess", "a") do |file|
@@ -19,12 +20,14 @@ module Performance
     end
   end
   
+  #This procedure joins .css and .js files. Minimize your data. It creates helpers into ApplicationHelper to load .js and .css files
+  #into views and insert .css to load first and .js after
   def join_jscss    
     make_datas
     system("jammit")
     p "Making procedures into app helper"    
     dir_helper =  "#{Rails.root}/app/helpers/"
-    File.open("#{dir_helper}application_helper.rb","r") do |read_helper|
+    File.open("#{dir_helper}application_helper.rb","a") do |read_helper|
       read_reader.readlines().each do |line|    
         if line =~ /ApplicationHelper/ then
           read_helper.puts "module ApplicationHelper\n\n\tdef stylesheets(*files)\n\tcontent_for(:stylesheets)  { stylesheet_link_tag(*files) }\nend\n\ndef javascripts(*files)\n\tcontent_for(:javascripts)  { javascripts_link_tag(*files) }\nend"
@@ -67,6 +70,7 @@ module Performance
     end  
   end
   
+  #It looks for bad queries into software.
   def query_performance
     p "Finding by N+1 queries"
     dir_models = "#{Rails.root}/app/models"
@@ -90,7 +94,7 @@ module Performance
   def cache_page_server
     controller = ARGV[0]
     action = ARGV[1]
-    File.open("/Users/eduardodeoliveiravasconcelos/app/models/#{controller.downcase}_sweeper.rb", "w") do |observer_file|
+    File.open("#{Rails.root}/app/models/#{controller.downcase}_sweeper.rb", "w") do |observer_file|
       observer_file.puts "class #{controller.capitalize}Sweeper < ActionController::Caching::Sweeper"
       observer_file.puts "\tobserve #{controller.capitalize!}"
       observer_file.puts "\tdef expire_cached_content(#{controller.downcase})"
@@ -98,12 +102,18 @@ module Performance
       observer_file.puts "\texpire_fragment(%r{#{controller.pluralize}/.*})\nend "
       observer_file.puts "alias_method :after_save, :expire_cached_content\nalias_method :after_destroy, :expire_cached_content\nend"
     end    
-    File.open("/Users/eduardodeoliveiravasconcelos/app/controllers/#{controller.pluralize}_controller.rb", "a+") do |file|  
-      file.puts("\n\tcaches_page :#{action.downcase} \n\tcache_sweeper :#{controller.downcase}_sweeper, :only => [:create, :update, :destroy]")
+    File.open("#{Rails.root}/app/controllers/#{controller.pluralize}_controller.rb", "a") do |file|  
+      file.readlines().each do |line|    
+        if line =~ /class #{controller.pluralize}Controller < ApplicationController/ then      
+          file.puts("class #{controller.pluralize}Controller < ApplicationController\n\tcaches_page :#{action.downcase} \n\tcache_sweeper :#{controller.downcase}_sweeper, :only => [:create, :update, :destroy]")
+        else
+          file.puts "#{line}"
+        end
+      end
     end
   end
   
-    
+  #Configure a static server to use to download static files like images, css, javascripts.  
   def config_static_server
   end
   
