@@ -105,7 +105,8 @@ module Performance
     File.open("#{Rails.root}/app/controllers/#{controller.pluralize}_controller.rb", "a") do |file|  
       file.readlines().each do |line|    
         if line =~ /class #{controller.pluralize}Controller < ApplicationController/ then      
-          file.puts("class #{controller.pluralize}Controller < ApplicationController\n\tcaches_page :#{action.downcase} \n\tcache_sweeper :#{controller.downcase}_sweeper, :only => [:create, :update, :destroy]")
+          file.puts("class #{controller.pluralize}Controller < ApplicationController\n\tcaches_page :#{action.downcase}") 
+          file.puts("\n\tcache_sweeper :#{controller.downcase}_sweeper, :only => [:create, :update, :destroy]")
         else
           file.puts "#{line}"
         end
@@ -113,7 +114,7 @@ module Performance
     end
   end
   
-  #Configure a static server to use to download static files like images, css, javascripts.  
+  #Configure a static server to use to download static files like images, videosa nd sounds.  
   def config_static_server
   end
   
