@@ -118,6 +118,10 @@ module Performance
   def config_static_server
   end
   
+  def copy_tasks
+    FileUtils.mv("files/performance.rake","#{Rails.root}/lib/tasks/performance.rake")
+  end
+  
   def run
     join_jscss
     configs_apache
