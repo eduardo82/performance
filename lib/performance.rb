@@ -91,9 +91,9 @@ module Performance
   
   #Make cache in controller and action, when happen the operations destroy, create and update. 
   #The controller and action are parameters 0 and 1 RESPECTIVAMENTE
-  def cache_page_server
-    controller = ARGV[0]
-    action = ARGV[1]
+  def cache_page_server(controller, action)
+ #   controller = ARGV[0]
+#    action = ARGV[1]
     File.open("#{Rails.root}/app/models/#{controller.downcase}_sweeper.rb", "w") do |observer_file|
       observer_file.puts "class #{controller.capitalize}Sweeper < ActionController::Caching::Sweeper"
       observer_file.puts "\tobserve #{controller.capitalize!}"
