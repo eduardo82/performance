@@ -22,4 +22,11 @@ task :config_static_server => :production do
   Performance::config_static_server
 end
 
+desc 'Client Performance'
+task :client_performance => :production do
+  Performance::configs_apache
+  Performance::join_css_js
+end
+
+
 
