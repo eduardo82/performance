@@ -71,22 +71,8 @@ module Performance
   end
   
   #It looks for bad queries into software.
-  def query_performance
-    p "Finding by N+1 queries"
-    dir_models = "#{Rails.root}/app/models"
-    list = Dir.entries("#{dir_models}")
-        list.each do |file|
-          strings = file.to_s
-          if strings =="." || strings ==".."
-          else
-            IO.foreach("#{file}") do |line|
-              if line =~ /has_one:/ then
-                p "Possible N+1 query found in #{file}"
-                p "Analyzing"
-              end
-            end
-          end
-        end    
+  def memory
+    puts("RODANDO MEMORY")
   end
   
   #Make cache in controller and action, when happen the operations destroy, create and update. 
@@ -125,7 +111,7 @@ module Performance
   def run
     join_jscss
     configs_apache
-    query_performance    
+    memory    
     cache_page_server
     config_static_server
   end

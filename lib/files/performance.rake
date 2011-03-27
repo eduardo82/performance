@@ -28,5 +28,10 @@ task :client_performance => :production do
   Performance::join_css_js
 end
 
+desc 'Improve Memory Performance'
+task :memory => :development do
+  Performance::memory
+end
+
 
 
