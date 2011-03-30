@@ -1,6 +1,7 @@
 module Performance
   require "fileutils"
   require "jammit"
+  require 'memcached'
   
   #It uses Apache configuration to do compreession of some type of html, css, js and xml.
   #It creates cache with duration of 1 month to images and others static files.
@@ -106,6 +107,13 @@ module Performance
   
   def copy_tasks
     FileUtils.mv("files/performance.rake","#{Rails.root}/lib/tasks/performance.rake")
+  end
+  
+  def memory(server)
+    if server.nil?
+      ActiveSupport::Cache::MemCacheStore.new(Memcached::Rails.new("localhost:11211"))
+    else 
+      ActiveSupport::Cache::MemCacheStore.new(Memcached::Rails.new("#{server}:11211"))   
   end
   
   def run
