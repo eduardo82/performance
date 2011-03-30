@@ -108,7 +108,7 @@ module Performance
   def memory
     system("memcached -d -m 512 -p 11211")
     temp = File.new("app.rb","w")
-    File.open("/Users/eduardodeoliveiravasconcelos/application.rb","r") do |file_require|
+    File.open("#{Rails.root}/config/application.rb","r") do |file_require|
       file_require.readlines().each do |line| 
         if line =~ /require 'rails\/all'/
           temp.puts "require 'rails\/all'"
@@ -122,6 +122,8 @@ module Performance
       end
     end
     temp.close
+    File.mv("#{Rails.root}/config/application.rb", "#{Rails.root}/config/old_application.rb")
+    File.mv("app.rb","#{Rails.root}/config/application.rb")
   end
   
   def run
