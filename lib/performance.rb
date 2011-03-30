@@ -1,22 +1,22 @@
 module Performance
   require "fileutils"
   require "jammit"
-  require 'memcached'
+  require "memcached"
   
   #It uses Apache configuration to do compreession of some type of html, css, js and xml.
   #It creates cache with duration of 1 month to images and others static files.
   def configs_apache
     if File.exists?("#{Rails.root}/public/.htaccess")  then
-      File.open("#{Rails.root}/public/.htaccess", "a") do |file|
-        file.puts "<IfModule mod_deflate.c>\n\tAddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/x-javascript\n</IfModule>\n\n"
-        file.puts "ExpiresActive On\n<FilesMatch '\\.(ico|jpg|jpeg|png|gif|js|css)'>\n\tExpiresDefault 'access plus 1 month'\n</FilesMatch>"
-        file.puts "<Directory '#{Rails.root}/public/assets'>\n\tExpiresDefault 'access plus 1 month'\n</Directory>"
+      File.open("#{Rails.root}/public/.htaccess", "a") do |file_apache|
+        file_apache.puts "<IfModule mod_deflate.c>\n\tAddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/x-javascript\n</IfModule>\n\n"
+        file_apache.puts "ExpiresActive On\n<FilesMatch '\\.(ico|jpg|jpeg|png|gif|js|css)'>\n\tExpiresDefault 'access plus 1 month'\n</FilesMatch>"
+        file_apache.puts "<Directory '#{Rails.root}/public/assets'>\n\tExpiresDefault 'access plus 1 month'\n</Directory>"
       end
     else
-      File.open("#{Rails.root}/public/.htaccess", "w") do |file|
-        file.puts "<IfModule mod_deflate.c>\n\tAddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/x-javascript\n</IfModule>\n\n"
-        file.puts "ExpiresActive On\n<FilesMatch '\\.(ico|jpg|jpeg|png|gif|js|css)'>\n\tExpiresDefault 'access plus 1 month'\n</FilesMatch>"
-        file.puts "<Directory '#{Rails.root}/public/assets'>\n\tExpiresDefault 'access plus 1 month'\n</Directory>"
+      File.open("#{Rails.root}/public/.htaccess", "w") do |file_apache|
+        file_apache.puts "<IfModule mod_deflate.c>\n\tAddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/x-javascript\n</IfModule>\n\n"
+        file_apache.puts "ExpiresActive On\n<FilesMatch '\\.(ico|jpg|jpeg|png|gif|js|css)'>\n\tExpiresDefault 'access plus 1 month'\n</FilesMatch>"
+        file_apache.puts "<Directory '#{Rails.root}/public/assets'>\n\tExpiresDefault 'access plus 1 month'\n</Directory>"
       end
     end
   end
@@ -71,11 +71,6 @@ module Performance
     end  
   end
   
-  #It looks for bad queries into software.
-  def memory
-    puts("RODANDO MEMORY")
-  end
-  
   #Make cache in controller and action, when happen the operations destroy, create and update. 
   #The controller and action are parameters 0 and 1 RESPECTIVAMENTE
   def cache_page_server(controller, action)
@@ -109,11 +104,25 @@ module Performance
     FileUtils.mv("files/performance.rake","#{Rails.root}/lib/tasks/performance.rake")
   end
   
-  def memory(server)
-    if server.nil?
-      ActiveSupport::Cache::MemCacheStore.new(Memcached::Rails.new("localhost:11211"))
-    else 
-      ActiveSupport::Cache::MemCacheStore.new(Memcached::Rails.new("#{server}:11211"))   
+  def memory
+    system("memcached -d -m 512 -p 11211")
+    File.open("#{Rails.root}/config/application.rb", "a") do |file|
+      file.readlines().each do |line| 
+        if line =~ /require 'rails\/all'/
+          file.puts("require 'rails\/all'")
+          file.puts("\nrequire 'memcached'\n")
+        else 
+          file.puts("#{line}")          
+        end
+      end
+      file.readlines().each do |line| 
+        if line=~ /class Application < Rails::Application/
+          file.puts("class Application < Rails::Application\n\tconfig.session_store = :mem_cache_store")
+        else 
+          file.puts("#{line}")
+        end
+      end
+    end
   end
   
   def run
