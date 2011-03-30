@@ -104,25 +104,24 @@ module Performance
     FileUtils.mv("files/performance.rake","#{Rails.root}/lib/tasks/performance.rake")
   end
   
+  #Memory configuration using memcached
   def memory
     system("memcached -d -m 512 -p 11211")
-    File.open("#{Rails.root}/config/application.rb", "a") do |file|
-      file.readlines().each do |line| 
+    temp = File.new("app.rb","w")
+    File.open("/Users/eduardodeoliveiravasconcelos/application.rb","r") do |file_require|
+      file_require.readlines().each do |line| 
         if line =~ /require 'rails\/all'/
-          file.puts("require 'rails\/all'")
-          file.puts("\nrequire 'memcached'\n")
+          temp.puts "require 'rails\/all'"
+          temp.puts "\nrequire 'memcached'\n"
         else 
-          file.puts("#{line}")          
+          temp.puts "#{line}"      
         end
-      end
-      file.readlines().each do |line| 
         if line=~ /class Application < Rails::Application/
-          file.puts("class Application < Rails::Application\n\tconfig.session_store = :mem_cache_store")
-        else 
-          file.puts("#{line}")
-        end
+          temp.puts "class Application < Rails::Application\n\tconfig.session_store = :mem_cache_store"
+        end  
       end
     end
+    temp.close
   end
   
   def run
