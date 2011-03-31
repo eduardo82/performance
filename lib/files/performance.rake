@@ -17,7 +17,7 @@ task :configs_apache => :production do
   
 end
 
-desc 'Config Assets'
+desc 'Config Static Server'
 task :config_static_server => :production do
   Performance::config_static_server
 end
@@ -30,8 +30,15 @@ end
 
 desc 'Improve Memory Performance'
 task :memory => :development do
-  Performance::memory
+  size = ENV["size"]
+  Performance::memory(size)
 end
 
+desc 'Improve Memory Performance'
+task :multi_memory => :development do
+  s1 = ENV["s1"]
+  s2 = ENV["s2"]
+  Performance::multi_memory(s1,s2)
+end
 
 

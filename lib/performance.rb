@@ -104,9 +104,7 @@ module Performance
     FileUtils.mv("files/performance.rake","#{Rails.root}/lib/tasks/performance.rake")
   end
   
-  #Memory configuration using memcached
-  def memory
-    system("memcached -d -m 512 -p 11211")
+  def require_memory
     temp = File.new("#{Rails.root}/app.rb","w")
     File.open("#{Rails.root}/config/application.rb","r") do |file_require|
       file_require.readlines().each do |line| 
@@ -125,11 +123,75 @@ module Performance
     File.mv("#{Rails.root}/config/application.rb", "#{Rails.root}/config/old_application.rb")
     File.mv("#{Rails.root}/app.rb","#{Rails.root}/config/application.rb")
   end
+  #Memory configuration using memcached
+  def memory(size)
+    if size.nil?      
+      system("memcached -d -m 512 -p 11211")
+    else
+      system("memcached -d -m #{size} -p 11211")
+    end
+    require_memory
+    temp1 = File.new("#{Rails.root}/controller.rb","w")
+    File.open("#{Rails.root}/app/controllers/application_controller.rb","r") do |file_controller|
+      file_require.readlines().each do |line| 
+        if line =~ /class ApplicationController < ActionController::Base/
+          temp1.puts "class ApplicationController < ActionController::Base"
+          temp1.puts "\n\tsession :cache => MemCache.new('localhost:11211')\n"
+        else 
+          temp1.puts "#{line}"      
+        end
+      end
+    end
+    File.mv("#{Rails.root}/config/application.rb", "#{Rails.root}/config/old_application.rb")
+    File.mv("#{Rails.root}/app.rb","#{Rails.root}/config/application.rb")
+    temp1.close
+  end
+  
+  def multi_memory(s1,s2)
+    if s2.nil? 
+      require_memory
+      temp1 = File.new("#{Rails.root}/controller.rb","w")
+      File.open("#{Rails.root}/app/controllers/application_controller.rb","r") do |file_controller|
+        file_require.readlines().each do |line| 
+          if line =~ /class ApplicationController < ActionController::Base/
+            temp1.puts "class ApplicationController < ActionController::Base"
+            temp1.puts "\n\tsession :cache => MemCache.new('#{s1}:11211')\n"
+          else 
+            temp1.puts "#{line}"      
+          end
+        end
+      end
+      File.mv("#{Rails.root}/app/controllers/application_controller.rb", "#{Rails.root}/app/controllers/old_application_controller.rb")
+      File.mv("#{Rails.root}/controller.rb","#{Rails.root}/app/controllers/application_controller.rb")
+      temp1.close
+    elsif s1.nil? && s2.nil?
+      memory(512)
+    elsif s1.nil? && s2.present
+      require_memory
+      temp1 = File.new("#{Rails.root}/controller.rb","w")
+      File.open("#{Rails.root}/app/controllers/application_controller.rb","r") do |file_controller|
+        file_require.readlines().each do |line| 
+          if line =~ /class ApplicationController < ActionController::Base/
+            temp1.puts "class ApplicationController < ActionController::Base"
+            temp1.puts "\n\tsession :cache => MemCache.new('#{s2}:11211')\n"
+          else 
+            temp1.puts "#{line}"      
+          end
+        end
+      end
+      File.mv("#{Rails.root}/app/controllers/application_controller.rb", "#{Rails.root}/app/controllers/old_application_controller.rb")
+      File.mv("#{Rails.root}/controller.rb","#{Rails.root}/app/controllers/application_controller.rb")
+      temp1.close
+    else
+      puts "Não foi possível configurar o servidor memcached." 
+      exit
+    end    
+  end
   
   def run
     join_jscss
     configs_apache
-    memory    
+    memory(512)    
     cache_page_server
     config_static_server
   end
