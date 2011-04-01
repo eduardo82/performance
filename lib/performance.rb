@@ -150,7 +150,7 @@ module Performance
   
   #Procedure to make balance memory in 2 servers
   def multi_memory(s1,s2)
-    if s2.nil? 
+    if s1.present? && s2.nil? 
       require_memory
       temp1 = File.new("#{Rails.root}/controller.rb","w")
       File.open("#{Rails.root}/app/controllers/application_controller.rb","r") do |file_controller|
@@ -168,7 +168,7 @@ module Performance
       temp1.close
     elsif s1.nil? && s2.nil?
       memory(512)
-    elsif s1.nil? && s2.present
+    elsif s1.nil? && s2.present?
       require_memory
       temp1 = File.new("#{Rails.root}/controller.rb","w")
       File.open("#{Rails.root}/app/controllers/application_controller.rb","r") do |file_controller|
