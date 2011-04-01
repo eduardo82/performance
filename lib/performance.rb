@@ -123,6 +123,7 @@ module Performance
     File.mv("#{Rails.root}/config/application.rb", "#{Rails.root}/config/old_application.rb")
     File.mv("#{Rails.root}/app.rb","#{Rails.root}/config/application.rb")
   end
+  
   #Memory configuration using memcached
   def memory(size)
     if size.nil?      
@@ -147,6 +148,7 @@ module Performance
     temp1.close
   end
   
+  #Procedure to make balance memory in 2 servers
   def multi_memory(s1,s2)
     if s2.nil? 
       require_memory
