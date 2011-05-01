@@ -31,7 +31,10 @@ module Performance
     File.open("#{dir_helper}application_helper.rb","a") do |read_helper|
       read_reader.readlines().each do |line|    
         if line =~ /ApplicationHelper/ then
-          read_helper.puts "module ApplicationHelper\n\n\tdef stylesheets(*files)\n\tcontent_for(:stylesheets)  { stylesheet_link_tag(*files) }\nend\n\ndef javascripts(*files)\n\tcontent_for(:javascripts)  { javascripts_link_tag(*files) }\nend"
+          read_helper.puts "module ApplicationHelper\n\n\tdef stylesheets(*files)
+          \n\tcontent_for(:stylesheets)  { stylesheet_link_tag(*files) }\nend\n\n
+          def javascripts(*files)\n\tcontent_for(:javascripts)  { javascripts_link_tag(*files)
+          }\nend"
         else
           read_helper.puts "#{line}"
         end
@@ -74,8 +77,6 @@ module Performance
   #Make cache in controller and action, when happen the operations destroy, create and update. 
   #The controller and action are parameters 0 and 1 RESPECTIVAMENTE
   def cache_page_server(controller, action)
- #   controller = ARGV[0]
-#    action = ARGV[1]
     File.open("#{Rails.root}/app/models/#{controller.downcase}_sweeper.rb", "w") do |observer_file|
       observer_file.puts "class #{controller.capitalize}Sweeper < ActionController::Caching::Sweeper"
       observer_file.puts "\tobserve #{controller.capitalize!}"
@@ -149,46 +150,54 @@ module Performance
   end
   
   #Procedure to make balance memory in 2 servers
-  def multi_memory(s1,s2)
-    if s1.present? && s2.nil? 
-      require_memory
-      temp1 = File.new("#{Rails.root}/controller.rb","w")
-      File.open("#{Rails.root}/app/controllers/application_controller.rb","r") do |file_controller|
+def multi_memory(s1,s2)
+  if s1.present? && s2.nil? 
+    require_memory
+    temp1 = File.new("#{Rails.root}/controller.rb","w")
+    File.open("#{Rails.root}/app/controllers/application_controller.rb","r") do |file_controller|
+      file_require.readlines().each do |line| 
+        if line =~ /class ApplicationController < ActionController::Base/
+          temp1.puts "class ApplicationController < ActionController::Base"
+          temp1.puts "\n\tsession :cache => MemCache.new('#{s1}:11211')\n"
+        else 
+          temp1.puts "#{line}"      
+        end
+      end
+    end
+  elsif s1.present? && s2.present?
+     File.open("#{Rails.root}/app/controllers/application_controller.rb","r") do |file_controller|
         file_require.readlines().each do |line| 
           if line =~ /class ApplicationController < ActionController::Base/
             temp1.puts "class ApplicationController < ActionController::Base"
-            temp1.puts "\n\tsession :cache => MemCache.new('#{s1}:11211')\n"
+            temp1.puts "\n\tsession :cache => MemCache.new('#{s1}:11211', '#{s2}:11211')\n"
           else 
             temp1.puts "#{line}"      
           end
         end
-      end
-      File.mv("#{Rails.root}/app/controllers/application_controller.rb", "#{Rails.root}/app/controllers/old_application_controller.rb")
-      File.mv("#{Rails.root}/controller.rb","#{Rails.root}/app/controllers/application_controller.rb")
-      temp1.close
-    elsif s1.nil? && s2.nil?
-      memory(512)
-    elsif s1.nil? && s2.present?
-      require_memory
-      temp1 = File.new("#{Rails.root}/controller.rb","w")
-      File.open("#{Rails.root}/app/controllers/application_controller.rb","r") do |file_controller|
-        file_require.readlines().each do |line| 
-          if line =~ /class ApplicationController < ActionController::Base/
-            temp1.puts "class ApplicationController < ActionController::Base"
-            temp1.puts "\n\tsession :cache => MemCache.new('#{s2}:11211')\n"
-          else 
-            temp1.puts "#{line}"      
-          end
+      end    
+  elsif s1.nil? && s2.nil?
+    memory(512)
+  elsif s1.nil? && s2.present?
+    require_memory
+    temp1 = File.new("#{Rails.root}/controller.rb","w")
+    File.open("#{Rails.root}/app/controllers/application_controller.rb","r") do |file_controller|
+      file_require.readlines().each do |line| 
+        if line =~ /class ApplicationController < ActionController::Base/
+          temp1.puts "class ApplicationController < ActionController::Base"
+          temp1.puts "\n\tsession :cache => MemCache.new('#{s2}:11211')\n"
+        else 
+          temp1.puts "#{line}"      
         end
       end
-      File.mv("#{Rails.root}/app/controllers/application_controller.rb", "#{Rails.root}/app/controllers/old_application_controller.rb")
-      File.mv("#{Rails.root}/controller.rb","#{Rails.root}/app/controllers/application_controller.rb")
-      temp1.close
-    else
-      puts "Não foi possível configurar o servidor memcached." 
-      exit
-    end    
+    end
+  temp1.close
+  else
+    puts "Não foi possível configurar o servidor memcached." 
+    exit
   end
+  File.mv("#{Rails.root}/app/controllers/application_controller.rb", "#{Rails.root}/app/controllers/old_application_controller.rb")
+  File.mv("#{Rails.root}/controller.rb","#{Rails.root}/app/controllers/application_controller.rb")    
+end
   
   def run
     join_jscss
