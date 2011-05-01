@@ -135,7 +135,7 @@ module Performance
     require_memory
     temp1 = File.new("#{Rails.root}/controller.rb","w")
     File.open("#{Rails.root}/app/controllers/application_controller.rb","r") do |file_controller|
-      file_require.readlines().each do |line| 
+      file_controller.readlines().each do |line| 
         if line =~ /class ApplicationController < ActionController::Base/
           temp1.puts "class ApplicationController < ActionController::Base"
           temp1.puts "\n\tsession :cache => MemCache.new('localhost:11211')\n"
@@ -151,11 +151,12 @@ module Performance
   
   #Procedure to make balance memory in 2 servers
 def multi_memory(s1,s2)
+  app_dir = "#{Rails.root}/app/controllers/application_controller.rb"
   if s1.present? && s2.nil? 
     require_memory
     temp1 = File.new("#{Rails.root}/controller.rb","w")
-    File.open("#{Rails.root}/app/controllers/application_controller.rb","r") do |file_controller|
-      file_require.readlines().each do |line| 
+    File.open("#{app_dir}","r") do |file_controller|
+      file_controller.readlines().each do |line| 
         if line =~ /class ApplicationController < ActionController::Base/
           temp1.puts "class ApplicationController < ActionController::Base"
           temp1.puts "\n\tsession :cache => MemCache.new('#{s1}:11211')\n"
@@ -165,23 +166,24 @@ def multi_memory(s1,s2)
       end
     end
   elsif s1.present? && s2.present?
-     File.open("#{Rails.root}/app/controllers/application_controller.rb","r") do |file_controller|
-        file_require.readlines().each do |line| 
-          if line =~ /class ApplicationController < ActionController::Base/
-            temp1.puts "class ApplicationController < ActionController::Base"
-            temp1.puts "\n\tsession :cache => MemCache.new('#{s1}:11211', '#{s2}:11211')\n"
-          else 
-            temp1.puts "#{line}"      
-          end
+    require_memory
+    File.open("#{app_dir}","r") do |file_controller|
+      file_controller.readlines().each do |line| 
+        if line =~ /class ApplicationController < ActionController::Base/
+          temp1.puts "class ApplicationController < ActionController::Base\n\t"
+          temp1.puts "session :cache => MemCache.new('#{s1}:11211', '#{s2}:11211')\n"
+        else 
+          temp1.puts "#{line}"      
         end
-      end    
+      end
+    end    
   elsif s1.nil? && s2.nil?
     memory(512)
   elsif s1.nil? && s2.present?
     require_memory
     temp1 = File.new("#{Rails.root}/controller.rb","w")
-    File.open("#{Rails.root}/app/controllers/application_controller.rb","r") do |file_controller|
-      file_require.readlines().each do |line| 
+    File.open("#{app_dir}","r") do |file_controller|
+      file_controller.readlines().each do |line| 
         if line =~ /class ApplicationController < ActionController::Base/
           temp1.puts "class ApplicationController < ActionController::Base"
           temp1.puts "\n\tsession :cache => MemCache.new('#{s2}:11211')\n"
@@ -195,8 +197,8 @@ def multi_memory(s1,s2)
     puts "Não foi possível configurar o servidor memcached." 
     exit
   end
-  File.mv("#{Rails.root}/app/controllers/application_controller.rb", "#{Rails.root}/app/controllers/old_application_controller.rb")
-  File.mv("#{Rails.root}/controller.rb","#{Rails.root}/app/controllers/application_controller.rb")    
+  File.mv("#{app_dir}", "#{Rails.root}/app/controllers/old_application_controller.rb")
+  File.mv("#{Rails.root}/controller.rb","#{app_dir}")    
 end
   
   def run
