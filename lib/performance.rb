@@ -77,13 +77,14 @@ module Performance
   #Make cache in controller and action, when happen the operations destroy, create and update. 
   #The controller and action are parameters 0 and 1 RESPECTIVAMENTE
   def cache_page_server(controller, action)
-    File.open("#{Rails.root}/app/models/#{controller.downcase}_sweeper.rb", "w") do |observer_file|
-      observer_file.puts "class #{controller.capitalize}Sweeper < ActionController::Caching::Sweeper"
-      observer_file.puts "\tobserve #{controller.capitalize!}"
-      observer_file.puts "\tdef expire_cached_content(#{controller.downcase})"
-      observer_file.puts "\texpire_page :controller => '#{controller.pluralize}', :action => '#{action.downcase}' "
-      observer_file.puts "\texpire_fragment(%r{#{controller.pluralize}/.*})\nend "
-      observer_file.puts "alias_method :after_save, :expire_cached_content\nalias_method :after_destroy, :expire_cached_content\nend"
+    File.open("#{Rails.root}/app/models/#{controller.downcase}_sweeper.rb", "w") do |ob|
+      ob.puts "class #{controller.capitalize}Sweeper < ActionController::Caching::Sweeper"
+      ob.puts "\tobserve #{controller.capitalize!}"
+      ob.puts "\tdef expire_cached_content(#{controller.downcase})\t"
+      ob.puts "expire_page :controller => '#{controller.pluralize}', :action => '#{action.downcase}'"
+      ob.puts "\texpire_fragment(%r{#{controller.pluralize}/.*})\nend "
+      ob.puts "alias_method :after_save, :expire_cached_content"
+      ob.puts "alias_method :after_destroy, :expire_cached_content\nend"
     end    
     File.open("#{Rails.root}/app/controllers/#{controller.pluralize}_controller.rb", "a") do |file|  
       file.readlines().each do |line|    
@@ -97,7 +98,7 @@ module Performance
     end
   end
   
-  #Configure a static server to use to download static files like images, videosa nd sounds.  
+  #Configure a static server to use to download static files like images, videos and sounds.  
   def config_static_server
   end
   
