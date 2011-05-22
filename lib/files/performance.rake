@@ -19,7 +19,8 @@ end
 
 desc 'Config Static Server'
 task :config_static_server => :production do
-  Performance::config_static_server
+  server = ENV["server"]
+  Performance::config_static_server(server)
 end
 
 desc 'Client Performance'

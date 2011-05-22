@@ -98,8 +98,17 @@ module Performance
     end
   end
   
-  #Configure a static server to use to download static files like images, videos and sounds.  
-  def config_static_server
+  #Configure a static server to use to download static files such as images, videos and sounds.  
+  def config_static_server(server)
+    File.open("#{Rails.root}/config/environments/production.rb","a") do |file|
+      file.readlines().each do |line|
+        if line =~ /# config.action_controller.asset_host = 'http:\/\/assets.example.com'/ then
+          file.puts("\n\tconfig.action_controller.asset_host = 'http:\/\/assets%d.#{server}'\n")
+        else
+          file.puts "#{line}"
+        end
+      end
+    end
   end
   
   def copy_tasks
