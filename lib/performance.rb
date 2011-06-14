@@ -25,7 +25,9 @@ module Performance
   #into views and insert .css to load first and .js after
   def join_jscss    
     make_datas
-    system("jammit")
+    Dir.chdir("#{Rails.root}/public/")
+#    system("jammit")
+    Jammit.package!
     p "Making procedures into app helper"    
     dir_helper =  "#{Rails.root}/app/helpers/"
     File.open("#{dir_helper}application_helper.rb","a") do |read_helper|
